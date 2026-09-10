@@ -2,14 +2,11 @@
 
 from __future__ import annotations
 
-import pytest
-
 from pictlang.optimizer import (
     OptimizeResult,
     available_optimizers,
     optimize,
 )
-
 
 SIMPLE_SVG = (
     '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">'

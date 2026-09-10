@@ -6,11 +6,8 @@ import json
 from pathlib import Path
 
 import pytest
-
 from pictlang import Config
-from pictlang.api import APIConfig
 from pictlang.config import example_config
-
 
 # ─────────────────────────────────────────────────────────────
 # Defaults
@@ -181,7 +178,7 @@ def test_apply_overrides_unknown_api_key():
 
 def test_example_config_is_serializable():
     example = example_config()
-    text = json.dumps(example)
+    json.dumps(example)
     assert "api" in example
     assert "save" in example
 

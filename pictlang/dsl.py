@@ -13,7 +13,6 @@ from __future__ import annotations
 import math
 import random
 from dataclasses import dataclass, field
-from typing import Iterable, Sequence
 
 # ─────────────────────────────────────────────────────────────
 # PALETTE
@@ -83,7 +82,7 @@ def mix(c1: str, c2: str, t: float) -> str:
                        b1 + (b2 - b1) * t)
 
 
-def hsl(h: float, s: float, l: float) -> str:
+def hsl(h: float, s: float, l: float) -> str: # noqa: E741
     """h in degrees, s and l in 0..1."""
     import colorsys
     r, g, b = colorsys.hls_to_rgb((h % 360) / 360, l, s)
@@ -162,7 +161,7 @@ def grad_conic(stops, cx: float = 0.5, cy: float = 0.5) -> Gradient:
 @dataclass
 class Pattern:
     id: str
-    element: "Element"
+    element: Element
     width: float
     height: float
 
@@ -172,7 +171,7 @@ class Pattern:
                 f'{self.element.to_svg()}</pattern>')
 
 
-def pattern(element: "Element", width: float, height: float) -> Pattern:
+def pattern(element: Element, width: float, height: float) -> Pattern:
     """Tile the element as a fill pattern."""
     return Pattern(_next_id("pat"), element, width, height)
 
@@ -185,7 +184,7 @@ def pattern(element: "Element", width: float, height: float) -> Pattern:
 class Element:
     tag: str
     attrs: dict = field(default_factory=dict)
-    children: list["Element"] = field(default_factory=list)
+    children: list[Element] = field(default_factory=list)
     text: str | None = None
     filters: list[str] = field(default_factory=list)
     opacity_value: float | None = None
@@ -473,8 +472,7 @@ def _mirror_impl(element, axis, kind: str) -> Element:
     e = group([element],
               translate=(axis * (1 - sx), axis * (1 - sy)),
               scale=1)
-    # apply scale via inner group
-    inner = group([element], scale=1)
+
     e.attrs["transform"] = (
         f"translate({axis * (1 - sx)} {axis * (1 - sy)}) "
         f"scale({sx} {sy}) translate({-axis * (1 - sx)} {-axis * (1 - sy)})"
@@ -554,7 +552,7 @@ def reflect(element, axis="x", origin=256, fade=0.4) -> Element:
     return flipped
 
 
-def vignette(canvas: "Canvas", strength=0.5, color="#000") -> None:
+def vignette(canvas: Canvas, strength=0.5, color="#000") -> None:
     """Add radial darkening at edges directly to canvas."""
     grad = grad_rad(
         [(0.55, mix(color, "#000000", 0) or color), (1.0, color)],

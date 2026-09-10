@@ -14,15 +14,14 @@ Exit codes:
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
-import json
 
 from ._version import __version__
-from .config import Config, example_config, SAVE_MODES, USER_CONFIG_PATH
+from .config import DEFAULT_CONFIG_NAME, SAVE_MODES, USER_CONFIG_PATH, Config, example_config
 from .logging_setup import setup_logging
 from .pipeline import generate
-
 
 # ─────────────────────────────────────────────────────────────
 # Parser
@@ -172,7 +171,7 @@ def cmd_init(args: argparse.Namespace) -> int:
     )
     print(f"wrote {target}")
     print("edit it to set your api_key, then run:")
-    print(f"  pictlang \"a cat\" --style \"flat icon\"")
+    print("  pictlang \"a cat\" --style \"flat icon\"")
     return 0
 
 
@@ -319,7 +318,7 @@ def _cmd_check(config: Config) -> int:
         print(f"config invalid: {e}", file=sys.stderr)
         return 1
 
-    print(f"config:  ok")
+    print("config:  ok")
     print(f"model:   {config.api.model}")
     print(f"base:    {config.api.base_url}")
     print(f"output:  {config.output_dir}")
@@ -383,7 +382,7 @@ def _print_result(result) -> int:
 
     # Invalid
     print(f"UUID: {result.uuid}")
-    print(f"STATUS: invalid")
+    print("STATUS: invalid")
     print(f"REASON: {result.reason or 'unknown'}")
     if result.files:
         for kind, path in result.files.items():

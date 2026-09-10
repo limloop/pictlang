@@ -8,12 +8,11 @@ No network access is required.
 from __future__ import annotations
 
 import json
-from typing import Any
 from types import SimpleNamespace
+from typing import Any
 
 import httpx
 import pytest
-
 from pictlang.api import (
     APIAuthError,
     APIConfig,
@@ -23,7 +22,6 @@ from pictlang.api import (
     APIResponseError,
     LLMClient,
 )
-
 
 # ─────────────────────────────────────────────────────────────
 # Helpers

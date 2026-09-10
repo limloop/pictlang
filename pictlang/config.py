@@ -19,6 +19,8 @@ from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
 from typing import Any
 
+from platformdirs import user_config_dir
+
 from .api import APIConfig
 
 logger = logging.getLogger(__name__)
@@ -27,8 +29,6 @@ logger = logging.getLogger(__name__)
 # ─────────────────────────────────────────────────────────────
 # Paths (cross-platform)
 # ─────────────────────────────────────────────────────────────
-
-from platformdirs import user_config_dir
 
 # The "appauthor" argument is only used on Windows.
 APP_NAME = "pictlang"
@@ -161,7 +161,7 @@ class Config:
     # ─── Loading ──────────────────────────────────────────────
 
     @classmethod
-    def load(cls, path: Path | None = None) -> "Config":
+    def load(cls, path: Path | None = None) -> Config:
         """
         Load configuration.
 
@@ -191,7 +191,7 @@ class Config:
         return cls()
 
     @classmethod
-    def _from_file(cls, path: Path) -> "Config":
+    def _from_file(cls, path: Path) -> Config:
         try:
             raw = json.loads(path.read_text(encoding="utf-8"))
         except json.JSONDecodeError as e:
@@ -200,7 +200,7 @@ class Config:
         return cls._from_dict(raw, base_dir=path.parent)
 
     @classmethod
-    def _from_dict(cls, data: dict[str, Any], base_dir: Path | None = None) -> "Config":
+    def _from_dict(cls, data: dict[str, Any], base_dir: Path | None = None) -> Config:
         """Build a Config from a dict, mapping known fields only."""
         data = dict(data)
 

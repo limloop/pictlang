@@ -48,15 +48,6 @@ def check(name: str, fn) -> None:
 def test_imports():
     import pictlang
     from pictlang import Config, LLMClient, generate  # noqa
-    from pictlang.api import APIConfig
-    from pictlang.config import example_config
-    from pictlang.prompt import render_prompt
-    from pictlang.validator import check_code_structure, validate_svg
-    from pictlang.sandbox import run_render
-    from pictlang.optimizer import optimize, available_optimizers
-    from pictlang.storage import Storage, make_meta
-    from pictlang.pipeline import GenerateResult
-    from pictlang.dsl import DSL_EXPORTS
     assert pictlang.__version__
 
 
@@ -109,7 +100,6 @@ def test_config_validate():
 
 
 def test_config_roundtrip():
-    import json
     from pictlang import Config
     from pictlang.config import example_config
 
@@ -136,9 +126,10 @@ def test_prompt_default():
 
 
 def test_prompt_missing_placeholder():
-    from pictlang.prompt import render_prompt, PromptError
     from pathlib import Path
     from tempfile import NamedTemporaryFile
+
+    from pictlang.prompt import PromptError, render_prompt
 
     with NamedTemporaryFile("w", suffix=".md", delete=False) as f:
         f.write("No placeholders here.\n")
@@ -204,7 +195,7 @@ def test_validate_code_ok():
 
 
 def test_validate_code_rejects_import():
-    from pictlang.validator import check_code_structure, ValidationError
+    from pictlang.validator import ValidationError, check_code_structure
     try:
         check_code_structure(
             "def render():\n"
@@ -218,7 +209,7 @@ def test_validate_code_rejects_import():
 
 
 def test_validate_code_rejects_toplevel():
-    from pictlang.validator import check_code_structure, ValidationError
+    from pictlang.validator import ValidationError, check_code_structure
     try:
         check_code_structure(
             "x = 1\n"
@@ -237,7 +228,7 @@ def test_validate_svg_ok():
 
 
 def test_validate_svg_rejects_garbage():
-    from pictlang.validator import validate_svg, ValidationError
+    from pictlang.validator import ValidationError, validate_svg
     for bad in ["", "hello", "<html></html>", "<svg>"]:
         try:
             validate_svg(bad)
@@ -267,7 +258,7 @@ def test_sandbox_simple():
 
 
 def test_sandbox_timeout():
-    from pictlang.sandbox import run_render, SandboxError
+    from pictlang.sandbox import SandboxError, run_render
     with TemporaryDirectory() as td:
         p = Path(td) / "gen.py"
         p.write_text(
@@ -285,7 +276,7 @@ def test_sandbox_timeout():
 
 
 def test_sandbox_rejects_bad_code():
-    from pictlang.sandbox import run_render, SandboxError
+    from pictlang.sandbox import SandboxError, run_render
     with TemporaryDirectory() as td:
         p = Path(td) / "gen.py"
         p.write_text("def render():\n    return 42\n", encoding="utf-8")

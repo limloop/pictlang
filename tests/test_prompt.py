@@ -5,14 +5,12 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
 from pictlang.prompt import (
     Prompt,
     PromptError,
     load_template,
     render_prompt,
 )
-
 
 # ─────────────────────────────────────────────────────────────
 # Built-in template

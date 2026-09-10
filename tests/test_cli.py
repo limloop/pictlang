@@ -3,12 +3,9 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import pytest
-
 from pictlang.cli import main
-
 
 # ─────────────────────────────────────────────────────────────
 # --version
@@ -93,7 +90,7 @@ def test_check_valid_config(tmp_path, monkeypatch, capsys):
         encoding="utf-8",
     )
     # --check will fail on API connection, but config part must be printed.
-    rc = main(["--check"])
+    main(["--check"])
     out = capsys.readouterr().out
     assert "config:" in out
     assert "model:" in out

@@ -3,13 +3,11 @@
 from __future__ import annotations
 
 import pytest
-
 from pictlang.validator import (
     ValidationError,
     check_code_structure,
     validate_svg,
 )
-
 
 # ─────────────────────────────────────────────────────────────
 # Code structure

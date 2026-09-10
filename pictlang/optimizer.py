@@ -107,7 +107,7 @@ def _try_scour(svg: str) -> str | None:
     or if optimization fails.
     """
     try:
-        from scour.scour import scourString, parse_args
+        from scour.scour import parse_args, scourString
     except ImportError:
         logger.debug("scour is not installed")
         return None

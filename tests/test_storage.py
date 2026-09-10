@@ -5,11 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
 from pictlang import Config
 from pictlang.storage import Storage, make_meta, utc_timestamp
-
 
 # ─────────────────────────────────────────────────────────────
 # Helpers

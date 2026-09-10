@@ -5,13 +5,10 @@ Shared pytest fixtures for pictlang tests.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 import pytest
-
 from pictlang import Config
 from pictlang.api import APIConfig
-
 
 # ─────────────────────────────────────────────────────────────
 # Config

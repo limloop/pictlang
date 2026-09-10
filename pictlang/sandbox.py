@@ -18,8 +18,7 @@ import sys
 import textwrap
 from pathlib import Path
 
-from .validator import check_code_structure, validate_svg, ValidationError
-
+from .validator import ValidationError, check_code_structure, validate_svg
 
 # ─────────────────────────────────────────────────────────────
 # Errors

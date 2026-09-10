@@ -4,12 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 from pictlang import Config
 from pictlang.api import APIError
-from pictlang.pipeline import generate, _strip_code_fences
-
+from pictlang.pipeline import _strip_code_fences, generate
 
 # ─────────────────────────────────────────────────────────────
 # Code fence cleanup

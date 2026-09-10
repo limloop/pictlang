@@ -5,7 +5,6 @@ from __future__ import annotations
 import xml.etree.ElementTree as ET
 
 import pytest
-
 from pictlang.dsl import (
     DSL_EXPORTS,
     add,
@@ -22,7 +21,6 @@ from pictlang.dsl import (
     star,
     to_svg,
 )
-
 
 # ─────────────────────────────────────────────────────────────
 # Exports
