@@ -21,7 +21,8 @@ from pathlib import Path
 from ._version import __version__
 from .config import DEFAULT_CONFIG_NAME, SAVE_MODES, USER_CONFIG_PATH, Config, example_config
 from .logging_setup import setup_logging
-from .pipeline import generate
+from .pipeline import generate, render_file
+from .storage import Storage
 
 # ─────────────────────────────────────────────────────────────
 # Parser
@@ -192,6 +193,8 @@ def main(argv: list[str] | None = None) -> int:
     # the parser flat. If the first token is "init", route to it.
     if argv and argv[0] == "init":
         return _main_init(argv[1:])
+    if argv and argv[0] == "render":
+        return _main_render(argv[1:])
 
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -305,6 +308,132 @@ def _main_init(argv: list[str]) -> int:
     print('  pictlang "a cat" --style "flat icon"')
     return 0
 
+# ─────────────────────────────────────────────────────────────
+# `render` handling
+# ─────────────────────────────────────────────────────────────
+
+def _main_render(argv: list[str]) -> int:
+    p = argparse.ArgumentParser(
+        prog="pictlang render",
+        description=(
+            "Re-render existing .py files to .svg without calling the API. "
+            "By default, only .py files that do not yet have a .svg are "
+            "processed."
+        ),
+    )
+    p.add_argument(
+        "uuid", nargs="?", default=None,
+        help="Only render this UUID. Default: all .py files missing a .svg.",
+    )
+    p.add_argument(
+        "--force", action="store_true",
+        help="Re-render even if .svg already exists.",
+    )
+    p.add_argument(
+        "--optimize", dest="optimize",
+        action="store_true", default=None,
+        help="Enable SVG optimization.",
+    )
+    p.add_argument(
+        "--no-optimize", dest="optimize",
+        action="store_false",
+        help="Disable SVG optimization.",
+    )
+    p.add_argument(
+        "--optimizer", choices=("auto", "scour", "svgo"),
+        default=None,
+        help="Which optimizer to use (default: from config, usually auto).",
+    )
+    p.add_argument(
+        "--keep-original", action="store_true", default=None,
+        help="Also save the pre-optimization SVG as <uuid>.original.svg.",
+    )
+    p.add_argument(
+        "--config", type=Path, default=None,
+        help="Path to a config file.",
+    )
+    p.add_argument(
+        "--out", type=Path, default=None,
+        help="Output directory (overrides config.output_dir).",
+    )
+    p.add_argument(
+        "--verbose", action="store_true", default=None,
+        help="Enable debug logging on stderr.",
+    )
+    args = p.parse_args(argv)
+
+    setup_logging(verbose=bool(args.verbose))
+
+    try:
+        config = Config.load(args.config)
+    except (FileNotFoundError, ValueError) as e:
+        print(f"config error: {e}", file=sys.stderr)
+        return 1
+
+    try:
+        config.apply_overrides({
+            "output_dir": args.out,
+            "optimize": args.optimize,
+            "optimizer": args.optimizer,
+            "keep_original": args.keep_original,
+            "verbose": args.verbose,
+        })
+    except ValueError as e:
+        print(f"argument error: {e}", file=sys.stderr)
+        return 1
+
+    return _run_render(args, config)
+
+
+def _run_render(args: argparse.Namespace, config: Config) -> int:
+    storage = Storage(config)
+
+    # Determine which files to process.
+    if args.uuid:
+        py = storage.py_path_for(args.uuid)
+        if not py.exists():
+            print(f"no such .py: {py}", file=sys.stderr)
+            return 1
+        targets = [py]
+    else:
+        targets = storage.iter_py_files()
+        if not args.force:
+            targets = [
+                p for p in targets
+                if not storage.svg_path_for(p.stem).exists()
+            ]
+
+    if not targets:
+        print("nothing to render")
+        return 0
+
+    ok = failed = skipped = 0
+    for py in targets:
+        uuid = py.stem
+        svg = storage.svg_path_for(uuid)
+
+        if svg.exists() and not args.force:
+            skipped += 1
+            continue
+
+        result = render_file(py, config, force=args.force)
+
+        if result.ok:
+            ok += 1
+            extras = []
+            if result.optimizer:
+                extras.append(result.optimizer)
+            if result.duration_ms:
+                extras.append(f"{result.duration_ms}ms")
+            tail = f" ({', '.join(extras)})" if extras else ""
+            print(f"OK   {uuid} -> {result.svg_path} "
+                  f"({result.bytes_svg} bytes){tail}")
+        else:
+            failed += 1
+            print(f"FAIL {uuid}: {result.reason}", file=sys.stderr)
+
+    print(f"\n{ok} ok, {failed} failed, {skipped} skipped")
+    return 0 if failed == 0 else 2
 
 # ─────────────────────────────────────────────────────────────
 # `--check`

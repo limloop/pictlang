@@ -157,3 +157,83 @@ def test_injected_client_is_not_closed(tmp_path: Path, mock_client):
 
     generate("t", "s", cfg, client=client)
     assert client.closed is False
+
+
+def test_render_file_creates_svg(tmp_path: Path):
+    from pictlang.pipeline import render_file
+
+    cfg = Config(output_dir=tmp_path / "gen", save="valid")
+    cfg.api.api_key = "x"
+
+    # Put a .py directly into valid/py/
+    from pictlang.storage import Storage
+    st = Storage(cfg)
+    st.ensure_dirs()
+    u = st.new_uuid()
+
+    code = (
+        "def render():\n"
+        "    c = new_canvas(16, 16)\n"
+        "    add(c, rect(0, 0, 16, 16, fill='#000000'))\n"
+        "    return to_svg(c)\n"
+    )
+    py = st.py_path_for(u)
+    py.write_text(code, encoding="utf-8")
+
+    result = render_file(py, cfg)
+    assert result.ok
+    assert result.svg_path is not None
+    assert result.svg_path.exists()
+    assert result.bytes_svg and result.bytes_svg > 0
+
+
+def test_render_file_skips_existing(tmp_path: Path):
+    from pictlang.pipeline import render_file
+    from pictlang.storage import Storage
+
+    cfg = Config(output_dir=tmp_path / "gen", save="valid")
+    cfg.api.api_key = "x"
+
+    st = Storage(cfg)
+    st.ensure_dirs()
+    u = st.new_uuid()
+
+    code = (
+        "def render():\n"
+        "    c = new_canvas(8, 8)\n"
+        "    add(c, rect(0, 0, 8, 8, fill='#111111'))\n"
+        "    return to_svg(c)\n"
+    )
+    py = st.py_path_for(u)
+    py.write_text(code, encoding="utf-8")
+
+    # First run: creates svg
+    r1 = render_file(py, cfg)
+    assert r1.ok
+
+    # Second run: skipped (no --force)
+    r2 = render_file(py, cfg)
+    assert r2.status == "skipped"
+
+    # Third run: forced
+    r3 = render_file(py, cfg, force=True)
+    assert r3.ok
+
+
+def test_render_file_bad_code(tmp_path: Path):
+    from pictlang.pipeline import render_file
+    from pictlang.storage import Storage
+
+    cfg = Config(output_dir=tmp_path / "gen", save="valid")
+    cfg.api.api_key = "x"
+
+    st = Storage(cfg)
+    st.ensure_dirs()
+    u = st.new_uuid()
+
+    py = st.py_path_for(u)
+    py.write_text("x = 1\n", encoding="utf-8")
+
+    result = render_file(py, cfg)
+    assert result.status == "failed"
+    assert result.reason

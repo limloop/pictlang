@@ -172,6 +172,31 @@ Optimizer никогда не запускается в режиме `py` — н
 Optimizer никогда не бросает исключение. При любой ошибке
 оригинальный SVG возвращается без изменений.
 
+## Локальный re-render
+
+Если `.svg` потерян или повреждён, но `.py` на месте, есть команда
+`pictlang render`, которая перегенерирует SVG **без обращения к API**.
+
+Она читает `valid/py/<uuid>.py`, прогоняет его через sandbox,
+опционально оптимизирует и пишет `valid/svg/<uuid>.svg`.
+
+Три режима:
+
+```
+pictlang render                # все .py без .svg
+pictlang render <uuid>         # только этот UUID
+pictlang render --force        # все .py, перезаписав существующие .svg
+```
+
+Флаги `--optimize`, `--no-optimize`, `--optimizer`, `--keep-original`
+работают так же, как в основной команде генерации.
+
+`render` **не трогает** API, метаданные (`meta/<uuid>.json`) и
+manifest. Это локальная операция: она пересобирает SVG из
+существующего кода и ничего больше. Если вам нужно обновить
+метаданные, удалите соответствующий `.json` и запустите
+`pictlang` заново.
+
 ## Конфигурация
 
 `pictlang` читает конфигурацию в порядке:
@@ -362,6 +387,31 @@ on stderr.
 
 The optimizer never raises. On any failure the original SVG is
 returned unchanged.
+
+## Local re-render
+
+If a `.svg` is lost or corrupted but its `.py` is still there, the
+`pictlang render` command re-renders the SVG **without calling the
+API**.
+
+It reads `valid/py/<uuid>.py`, runs it through the sandbox, optionally
+optimizes the output, and writes `valid/svg/<uuid>.svg`.
+
+Three modes:
+
+```
+pictlang render                # all .py files missing a .svg
+pictlang render <uuid>         # just this UUID
+pictlang render --force        # all .py files, overwriting existing .svg
+```
+
+`--optimize`, `--no-optimize`, `--optimizer`, and `--keep-original`
+work the same as in the main generation command.
+
+`render` does **not** touch the API, metadata (`meta/<uuid>.json`), or
+the manifest. It is a purely local operation: it rebuilds SVG from
+existing code and nothing else. If you need to refresh metadata,
+delete the corresponding `.json` and run `pictlang` again.
 
 ## Configuration
 

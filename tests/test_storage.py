@@ -200,3 +200,30 @@ def test_utc_timestamp_format():
     ts = utc_timestamp()
     assert ts.endswith("Z")
     assert "T" in ts
+
+def test_py_and_svg_paths(tmp_path: Path):
+    st = _storage(tmp_path, save="valid")
+    st.ensure_dirs()
+    u = st.new_uuid()
+
+    assert st.py_path_for(u).name == f"{u}.py"
+    assert st.svg_path_for(u).name == f"{u}.svg"
+
+
+def test_iter_py_files_empty(tmp_path: Path):
+    st = _storage(tmp_path, save="valid")
+    st.ensure_dirs()
+    assert st.iter_py_files() == []
+
+
+def test_iter_py_files_sorted(tmp_path: Path):
+    st = _storage(tmp_path, save="valid")
+    st.ensure_dirs()
+    for _ in range(3):
+        u = st.new_uuid()
+        st.save_valid(uuid=u, code="c", svg="<svg/>", meta=_meta(u))
+
+    files = st.iter_py_files()
+    names = [p.name for p in files]
+    assert names == sorted(names)
+    assert len(names) == 3

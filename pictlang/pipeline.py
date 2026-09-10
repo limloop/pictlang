@@ -55,6 +55,26 @@ class GenerateResult:
         return self.status == "valid"
 
 
+@dataclass
+class RenderResult:
+    """Outcome of a single render_file() call.
+
+    Local-only: no API, no metadata, no manifest.
+    """
+
+    uuid: str
+    status: str                     # "ok" | "skipped" | "failed"
+    reason: str | None = None
+    svg_path: Path | None = None
+    bytes_svg: int | None = None
+    optimizer: str | None = None
+    duration_ms: int = 0
+
+    @property
+    def ok(self) -> bool:
+        return self.status == "ok"
+
+
 # ─────────────────────────────────────────────────────────────
 # Public API
 # ─────────────────────────────────────────────────────────────
@@ -306,3 +326,85 @@ def _cleanup_tmp(path: Path) -> None:
             parent.rmdir()
     except OSError as e:
         logger.debug("Could not clean up %s: %s", path, e)
+
+
+# ─────────────────────────────────────────────────────────────
+# Local re-rendering
+# ─────────────────────────────────────────────────────────────
+
+def render_file(
+    py_path: Path,
+    config: Config,
+    *,
+    force: bool = False,
+) -> RenderResult:
+    """
+    Render an existing .py file to .svg.
+
+    Reads valid/py/<uuid>.py, runs it in the sandbox, optionally
+    optimizes the output, writes valid/svg/<uuid>.svg.
+
+    Does not touch the API, metadata, or manifest.
+    Does not modify the .py file.
+    """
+    import time
+
+    started = time.monotonic()
+
+    uuid = py_path.stem
+    storage = Storage(config)
+    svg_path = storage.svg_path_for(uuid)
+
+    if svg_path.exists() and not force:
+        return RenderResult(
+            uuid=uuid,
+            status="skipped",
+            reason="already exists",
+        )
+
+    if not py_path.exists():
+        return RenderResult(
+            uuid=uuid,
+            status="failed",
+            reason=f"not found: {py_path}",
+        )
+
+    try:
+        svg = run_render(
+            py_path,
+            timeout=config.render_timeout,
+            mem_mb=config.render_mem_mb,
+        )
+    except (SandboxError, ValidationError) as e:
+        return RenderResult(
+            uuid=uuid,
+            status="failed",
+            reason=f"render: {e}",
+            duration_ms=int((time.monotonic() - started) * 1000),
+        )
+
+    svg_original = svg
+    optimizer_used: str | None = None
+
+    if config.runs_optimizer:
+        opt = optimize(svg, config.optimizer)
+        if opt.optimizer is not None:
+            svg = opt.svg
+            optimizer_used = opt.optimizer
+
+    storage.ensure_dirs()
+    svg_path.write_text(svg, encoding="utf-8")
+
+    # Only save the original if we actually changed it.
+    if config.keep_original and optimizer_used is not None:
+        original_path = storage.valid_svg_dir / f"{uuid}.original.svg"
+        original_path.write_text(svg_original, encoding="utf-8")
+
+    return RenderResult(
+        uuid=uuid,
+        status="ok",
+        svg_path=svg_path,
+        bytes_svg=len(svg.encode("utf-8")),
+        optimizer=optimizer_used,
+        duration_ms=int((time.monotonic() - started) * 1000),
+    )

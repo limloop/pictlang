@@ -47,6 +47,38 @@ def test_init_explicit_path(tmp_path, capsys):
     assert rc == 0
     assert target.exists()
 
+# ─────────────────────────────────────────────────────────────
+# render
+# ─────────────────────────────────────────────────────────────
+
+def test_render_nothing_to_do(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "pictlang.json").write_text(
+        json.dumps({
+            "api": {"api_key": "x", "model": "m"},
+            "output_dir": str(tmp_path / "gen"),
+        }),
+        encoding="utf-8",
+    )
+    rc = main(["render"])
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "nothing to render" in out
+
+
+def test_render_missing_uuid(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "pictlang.json").write_text(
+        json.dumps({
+            "api": {"api_key": "x", "model": "m"},
+            "output_dir": str(tmp_path / "gen"),
+        }),
+        encoding="utf-8",
+    )
+    rc = main(["render", "00000000-0000-0000-0000-000000000000"])
+    assert rc == 1
+    err = capsys.readouterr().err
+    assert "no such .py" in err
 
 # ─────────────────────────────────────────────────────────────
 # Usage errors

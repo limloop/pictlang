@@ -252,6 +252,22 @@ class Storage:
         with self.manifest_path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
+    # ─── Path helpers ─────────────────────────────────────────
+
+    def py_path_for(self, uuid: str) -> Path:
+        """Path where the .py for this UUID would live."""
+        return self.valid_py_dir / f"{uuid}.py"
+
+    def svg_path_for(self, uuid: str) -> Path:
+        """Path where the .svg for this UUID would live."""
+        return self.valid_svg_dir / f"{uuid}.svg"
+
+    def iter_py_files(self) -> list[Path]:
+        """All .py files under valid/py/, sorted by name."""
+        if not self.valid_py_dir.exists():
+            return []
+        return sorted(self.valid_py_dir.glob("*.py"))
+
 
 # ─────────────────────────────────────────────────────────────
 # Helpers
