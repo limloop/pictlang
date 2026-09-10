@@ -87,6 +87,29 @@ UTILS
   lerp(a, b, t)
   math, random
 
+IMPORTANT: canvas and elements
+
+- Every primitive (rect, circle, ellipse, line, polygon, polyline,
+  path, arc, star, ring, grid, text) RETURNS an element. It does NOT
+  add itself to the canvas.
+
+- You must call add(canvas, element) yourself:
+
+      # WRONG — the circle is created and discarded
+      circle(256, 256, 50, fill="#f00")
+
+      # RIGHT — the circle is added to the canvas
+      add(c, circle(256, 256, 50, fill="#f00"))
+
+- The same applies to composite results: group(...), glow(...),
+  shadow(...), transform(...), rotate(...), scale(...), reflect(...),
+  clip(...). They all return elements. Add them explicitly.
+
+- The ONLY function that adds itself to the canvas is bg(canvas, color).
+
+- If you forget add(), the element will be silently missing from the
+  output. There is no error.
+
 Style rules:
 - Colors: hex strings like "#rrggbb".
 - fill=None means no fill; stroke=None means no stroke.
