@@ -319,7 +319,7 @@ def example_config() -> dict[str, Any]:
             "max_tokens": 8000,
             "temperature": 0.7,
             "proxy": None,
-            "enable_reasoning": False,
+            "enable_reasoning": None,
             "reasoning_format": "auto",
             "reasoning_effort": "medium",
             "max_retries": 3,

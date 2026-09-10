@@ -122,10 +122,10 @@ def build_parser() -> argparse.ArgumentParser:
                      help="Proxy URL (http/https/socks5).")
     api.add_argument("--reasoning", dest="enable_reasoning",
                      action="store_true", default=None,
-                     help="Enable reasoning mode (for o-series).")
+                     help="Explicitly enable reasoning (default: provider default).")
     api.add_argument("--no-reasoning", dest="enable_reasoning",
                      action="store_false",
-                     help="Disable reasoning mode.")
+                     help="Explicitly disable reasoning.")
 
     # ── Prompt ──────────────────────────────────────────────
     pr = p.add_argument_group("prompt")

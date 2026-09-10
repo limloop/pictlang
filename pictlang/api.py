@@ -43,8 +43,11 @@ class APIConfig:
     # Proxy
     proxy: str | None = None
 
-    # Reasoning
-    enable_reasoning: bool = False
+    # Reasoning is tri-state:
+    #   None  -> leave the provider default untouched
+    #   True  -> explicitly enable
+    #   False -> explicitly disable
+    enable_reasoning: bool | None = None
     # Format of the reasoning field in extra_body. "auto" picks by base_url.
     # "openai"     -> extra_body = {"reasoning_effort": "medium"}
     # "openrouter" -> extra_body = {"reasoning": {"enabled": True}}
@@ -172,21 +175,34 @@ class LLMClient:
         return "none"
 
     def _build_reasoning_body(self) -> dict[str, Any]:
-        """Build extra_body for reasoning. Empty dict if disabled."""
-        if not self.config.enable_reasoning:
+        """Build extra_body for reasoning.
+
+        Returns an empty dict if we should not touch the provider's default.
+
+        Tri-state:
+          None  -> do not send anything, use provider default
+          True  -> explicitly enable
+          False -> explicitly disable
+        """
+        enabled = self.config.enable_reasoning
+        if enabled is None:
             return {}
 
         fmt = self._resolve_reasoning_format()
 
         if fmt == "openai":
-            # OpenAI o-series: reasoning_effort
-            return {"reasoning_effort": self.config.reasoning_effort}
+            # OpenAI o-series: reasoning_effort only matters when enabled.
+            # For non-reasoning models, sending it causes 400.
+            if enabled:
+                return {"reasoning_effort": self.config.reasoning_effort}
+            # Disabling is not supported by OpenAI — just omit.
+            return {}
 
         if fmt == "openrouter":
-            # OpenRouter: {"reasoning": {"enabled": True}}
-            return {"reasoning": {"enabled": True}}
+            # OpenRouter: explicit both ways.
+            return {"reasoning": {"enabled": bool(enabled)}}
 
-        # "none" or unknown — send nothing
+        # "none" or unknown — do not interfere.
         return {}
 
     # ─── Main method ──────────────────────────────────────────

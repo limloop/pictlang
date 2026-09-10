@@ -238,13 +238,33 @@ def test_reasoning_model_uses_max_completion_tokens(config: APIConfig):
 # Reasoning extra_body
 # ─────────────────────────────────────────────────────────────
 
-def test_reasoning_disabled_sends_no_extra_body(config: APIConfig):
-    config.enable_reasoning = False
+def test_reasoning_none_sends_no_extra_body(config: APIConfig):
+    config.enable_reasoning = None
     client, rec = _make_client(config, [
         httpx.Response(200, json=_openai_response()),
     ])
     client.chat("s", "u")
     assert "reasoning_effort" not in rec.request_bodies[0]
+    assert "reasoning" not in rec.request_bodies[0]
+
+
+def test_reasoning_disabled_explicit_openrouter(config: APIConfig):
+    config.enable_reasoning = False
+    config.reasoning_format = "openrouter"
+    client, rec = _make_client(config, [
+        httpx.Response(200, json=_openai_response()),
+    ])
+    client.chat("s", "u")
+    assert rec.request_bodies[0]["reasoning"] == {"enabled": False}
+
+
+def test_reasoning_none_sends_nothing(config: APIConfig):
+    config.enable_reasoning = None
+    config.reasoning_format = "openrouter"
+    client, rec = _make_client(config, [
+        httpx.Response(200, json=_openai_response()),
+    ])
+    client.chat("s", "u")
     assert "reasoning" not in rec.request_bodies[0]
 
 
