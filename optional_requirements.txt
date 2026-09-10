@@ -1,0 +1,23 @@
+# ─────────────────────────────────────────────────────────────
+# pictlang — optional dependencies
+# ─────────────────────────────────────────────────────────────
+# Install these separately if you need the corresponding features.
+# The core package works without them.
+
+# ── SVG optimization ─────────────────────────────────────────
+# Pure-Python SVG optimizer (no Node.js required).
+# Enables: --optimize --optimizer scour
+scour>=0.38
+
+# ── SOCKS5 proxy support ─────────────────────────────────────
+# Required for: api.proxy = "socks5://host:port"
+# (http:// and https:// proxies work without this extra)
+httpx[socks]>=0.25
+
+# ── Visual SVG inspection (optional, for development) ────────
+# Renders SVG to PNG so you can look at the result.
+cairosvg>=2.7
+
+# ── Testing and development ──────────────────────────────────
+pytest>=7.0
+pytest-cov>=4.0

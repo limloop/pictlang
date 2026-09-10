@@ -216,3 +216,18 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+
+# Local configuration (contains API keys — never commit)
+pictlang.json
+.pictlang/
+*.local.json
+
+# Generated output (SVGs, code, metadata, manifests)
+generated/
+output/
+
+# Temporary files used during render()
+.tmp/
+*.tmp

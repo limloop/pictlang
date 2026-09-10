@@ -1,0 +1,158 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pictlang"
+version = "0.1.0"
+description = "Generate SVG images from a theme and style via an LLM-written Python DSL"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [
+    { name = "limloop" },
+]
+keywords = ["svg", "llm", "openai", "image-generation", "dsl", "ai", "pictlang"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+
+dependencies = [
+    "openai>=1.0",
+    "httpx>=0.25",
+    "platformdirs>=4.0",
+]
+
+[project.optional-dependencies]
+# Optional features — install with: pip install pictlang[optimize]
+optimize = ["scour>=0.38"]
+# SOCKS5 proxy support for the API client
+socks = ["httpx[socks]>=0.25"]
+# Everything optional
+all = ["scour>=0.38", "httpx[socks]>=0.25"]
+
+# Development-only deps — install with: pip install -e ".[dev]"
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.4",
+    "mypy>=1.8",
+]
+
+[project.urls]
+Homepage = "https://github.com/limloop/pictlang"
+Repository = "https://github.com/limloop/pictlang"
+Issues = "https://github.com/limloop/pictlang/issues"
+
+[project.scripts]
+pictlang = "pictlang.cli:main"
+
+# ─────────────────────────────────────────────────────────────
+# setuptools — what to include in the package
+# ─────────────────────────────────────────────────────────────
+
+[tool.setuptools]
+packages = ["pictlang"]
+
+[tool.setuptools.package-data]
+pictlang = ["prompts/*.md"]
+
+# ─────────────────────────────────────────────────────────────
+# pytest
+# ─────────────────────────────────────────────────────────────
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+]
+markers = [
+    "integration: marks tests that hit a real or mocked API",
+    "slow: marks slow tests",
+]
+filterwarnings = [
+    "error",
+    # third-party libraries occasionally emit deprecations we cannot fix
+    "ignore::DeprecationWarning:openai.*",
+    "ignore::DeprecationWarning:httpx.*",
+]
+
+# ─────────────────────────────────────────────────────────────
+# coverage
+# ─────────────────────────────────────────────────────────────
+
+[tool.coverage.run]
+branch = true
+source = ["pictlang"]
+omit = [
+    "*/__main__.py",
+    "tests/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+    "@abstractmethod",
+    "except ImportError:",
+    "except Exception:",
+]
+fail_under = 60
+show_missing = true
+
+# ─────────────────────────────────────────────────────────────
+# ruff
+# ─────────────────────────────────────────────────────────────
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["pictlang", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "C4",  # flake8-comprehensions
+]
+ignore = [
+    "E501",  # line length — handled by formatter
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011"]
+
+# ─────────────────────────────────────────────────────────────
+# mypy
+# ─────────────────────────────────────────────────────────────
+
+[tool.mypy]
+python_version = "3.10"
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+files = ["pictlang"]
+
+[[tool.mypy.overrides]]
+module = "scour.*"
+ignore_missing_imports = true
