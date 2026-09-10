@@ -1,0 +1,16 @@
+{
+  "uuid": "79270c2a-1f42-4d9a-a05b-b1cff8447b1e",
+  "theme": "Городской пейзаж (небоскребы).",
+  "style": "Строгий Баухаус. Только базовые геометрические фигуры (прямоугольники, круги, треугольники) и ограниченная палитра (красный, желтый, синий, черный). Никаких градиентов, только плоские цвета.",
+  "model": "deepseek/deepseek-v4-flash-0731",
+  "timestamp": "2026-09-10T22:10:41Z",
+  "status": "valid",
+  "reason": null,
+  "bytes_py": 2177,
+  "bytes_svg": 15860,
+  "bytes_svg_before_optimize": null,
+  "optimizer": null,
+  "duration_api_ms": 26957,
+  "duration_render_ms": 57,
+  "duration_optimize_ms": null
+}
